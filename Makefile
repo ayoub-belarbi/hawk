@@ -86,7 +86,7 @@ tools/hawk_monitor: tools/hawk_monitor.c
 
 # TODO(must): This is inching towards becoming annoying: want better build infrastructure/deps
 tools/hawk_invoke: tools/hawk_invoke.c tools/common.h
-	gcc -fpie -pie $(CFLAGS) -o $@ $<
+	gcc -fpie -pie $(CFLAGS) -o $@ $< #ToUnderstand: perhaps $(CFLAGS) is simply empty ?? 
 
 tools: tools/hawk_chkpwd tools/hawk_monitor tools/hawk_invoke
 
