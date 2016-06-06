@@ -55,6 +55,7 @@ def configure_machine(machine, idx, roles, memory)
     provider.cpus = 1
     provider.graphics_port = 9200 + idx
     provider.storage :file, path: "#{$shared_disk}.raw", size: "#{$shared_disk_size}M", type: 'raw', :bus=> 'scsi', :device=>'sdb', cache: 'none', allow_existing: true
+
   end
 end
 
@@ -70,25 +71,29 @@ Vagrant.configure("2") do |config|
   config.bindfs.bind_folder "/vagrant", "/vagrant", force_user: "hacluster", force_group: "haclient", perms: "u=rwX:g=rwXD:o=rXD", after: :provision
 
 
-################# Configuration for the primary node############################
+
+#################DOCS:   Configuration for the primary node############################
   config.vm.define "webui", primary: true do |machine|
     machine.vm.hostname = "webui"
     machine.vm.network :forwarded_port, host_ip: host_bind_address, guest: 3000, host: 3000
     configure_machine machine, 0, ["base", "webui"], 1024
 
+
   end
-############################End configuration first machine#####################
+############################DOCS:  End configuration first machine#####################
 
   1.upto(2).each do |i|
     config.vm.define "node#{i}", autostart: true do |machine|
+
       machine.vm.hostname = "node#{i}"
       configure_machine machine, i, ["base", "node"], 512
 
+
     end
   end
-############## END Configuration for the 3 other nodes node#####################
+############## DOCS:  END Configuration for the 3 other nodes node#####################
 
-  # In case of any provider above didn't work, use libvirt
+  # DOCS:  In case of any provider above didn't work, use libvirt
   config.vm.provider :libvirt do |provider, override|
     provider.storage_pool_name = "default"
     provider.management_network_name = "vagrant"

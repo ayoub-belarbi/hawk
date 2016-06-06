@@ -1,5 +1,8 @@
+### DOCS: This meant to be a fillup template for HAWK
+### DOCS: (Please read this documentation in order to understand this file and the purpose from it: http://ftp.novell.hu/pub/mirrors/ftp.novell.com/forge/library/SUSE%20Package%20Conventions/spc_sysconfig.html
+### DOCS: It set some basic env variable regarding the hawk application, in instance, the rails env, the maximum number of threads, the maximum number of worker processes(puma) and the listen address and port...
 ## Path:            Cluster/Hawk
-## Description:     Mode of operation 
+## Description:     Mode of operation
 ## Type:            string(production,development,test)
 ## Default:         production
 ## ServiceRestart:  hawk
