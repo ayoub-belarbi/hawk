@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 def host_bind_address
-  #DOCS: If the environment variable VAGRANT_INSECURE_FORWARDS is set to "yes, y, true or on" then it will expose all the ip addresses in the guest machine to the host machine from port 3000 of the guest machine to the port 3000 of the host machine and vice versa
+  #DOCS: If the environment variable VAGRANT_INSECURE_FORWARDS is set to "yes, y, true or on" then it will expose all the ip addresses in the guest machine to the host machine from port e.g. 3000 of the guest machine to the port 3000 of the host machine and vice versa
   ENV['VAGRANT_INSECURE_FORWARDS'] =~ /^(y(es)?|true|on)$/i ? '*' : '127.0.0.1'
 end
 
@@ -10,6 +10,7 @@ $shared_disk = '.vagrant/_shared_disk'
 $shared_disk_size = 128 # MB
 
 # Create and attach shared SBD/OCFS2 disk for VirtualBox
+#DOCS: see https://gist.github.com/leifg/4713995  && http://askubuntu.com/questions/317338/how-can-i-increase-disk-size-on-a-vagrant-vm && http://everythingshouldbevirtual.com/vagrant-adding-a-second-hard-drive && http://crysol.github.io/recipe/2015-11-17/vagrant-vdi-virtual-disk-for-virtualbox/#.V1V-hqJ96V4
 class VagrantPlugins::ProviderVirtualBox::Action::SetName
   alias_method :original_call, :call
   def call(env)
