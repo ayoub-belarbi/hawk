@@ -45,7 +45,8 @@ BINDIR = /usr/bin
 SBINDIR = /usr/sbin
 
 .PHONY: all clean tools
-
+# DOCS: 1'st step, if the env variable BUNDLE_GEMS is set to True, then bundle the gems inside the rpm by installing them locally (bundle package and bundle install --local --deployment tell bundler to install the gems from the cache instead of fetching them from rubygems.org)
+# because the files scripts/hawk.$(INIT_STYLE) scripts/hawk.service scripts/hawk.service.bundle_gems tools, it will be passed to the placeholder target and dependecy %:: %.in
 all: scripts/hawk.$(INIT_STYLE) scripts/hawk.service scripts/hawk.service.bundle_gems tools
 	(cd hawk; \
 	 if $(BUNDLE_GEMS) ; then \
@@ -86,7 +87,7 @@ tools/hawk_monitor: tools/hawk_monitor.c
 
 # TODO(must): This is inching towards becoming annoying: want better build infrastructure/deps
 tools/hawk_invoke: tools/hawk_invoke.c tools/common.h
-	gcc -fpie -pie $(CFLAGS) -o $@ $< #ToUnderstand: perhaps $(CFLAGS) is simply empty ?? 
+	gcc -fpie -pie $(CFLAGS) -o $@ $< #ToUnderstand: perhaps $(CFLAGS) is simply empty ??
 
 tools: tools/hawk_chkpwd tools/hawk_monitor tools/hawk_invoke
 
@@ -164,4 +165,3 @@ srpm: archive
 
 rpm: srpm
 	rpmbuild --rebuild $(RPM_ROOT)/*.src.rpm
-

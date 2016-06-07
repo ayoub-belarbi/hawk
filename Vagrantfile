@@ -10,7 +10,7 @@ $shared_disk = '.vagrant/_shared_disk'
 $shared_disk_size = 128 # MB
 
 # Create and attach shared SBD/OCFS2 disk for VirtualBox
-# Add and attach extra disk to each node, this is done by a callback (apparently)
+# Add one extra disk and attach it to each node, this is done by a callback (apparently)
 #DOCS: see https://gist.github.com/leifg/4713995  && http://askubuntu.com/questions/317338/how-can-i-increase-disk-size-on-a-vagrant-vm && http://everythingshouldbevirtual.com/vagrant-adding-a-second-hard-drive && http://crysol.github.io/recipe/2015-11-17/vagrant-vdi-virtual-disk-for-virtualbox/#.V1V-hqJ96V4
 class VagrantPlugins::ProviderVirtualBox::Action::SetName
   alias_method :original_call, :call
@@ -20,6 +20,7 @@ class VagrantPlugins::ProviderVirtualBox::Action::SetName
     driver = env[:machine].provider.driver
     #see this link to understand more about uuid: http://superuser.com/a/837005 :
     uuid = driver.instance_eval { @uuid }
+    #Check if the file exist, if yes just attach it
     if !File.exist?(disk_file)
       ui.info "Creating storage file '#{disk_file}'..."
       driver.execute('createhd', "--filename", disk_file, "--size", "#{$shared_disk_size}", '--variant', 'fixed')
@@ -78,7 +79,7 @@ Vagrant.configure("2") do |config|
   #DOCS: No need to ssh insert key because we don't have concerns about security here and maybe this option make some troubles
   config.ssh.insert_key = false
   #DOCS: All this section is about performance issue for using essentially virtualbox, to overcome that, we use nfs combined with bindfs
-  #DOCS: Nfs is better in performance that's why we used.
+  #DOCS: Nfs is better in performance that's why we used, see : https://stefanwrobel.com/how-to-make-vagrant-performance-not-suck
   config.vm.synced_folder ".", "/vagrant", type: "nfs", mount_options: ["rw", "noatime", "async"]
   config.bindfs.bind_folder "/vagrant", "/vagrant", force_user: "hacluster", force_group: "haclient", perms: "u=rwX:g=rwXD:o=rXD", after: :provision
   #DOCS: When using nfs, files has problem with permissions (An NFS mount has the same numeric permissions in the guest as in the host)
