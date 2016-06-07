@@ -10,6 +10,7 @@ $shared_disk = '.vagrant/_shared_disk'
 $shared_disk_size = 128 # MB
 
 # Create and attach shared SBD/OCFS2 disk for VirtualBox
+# Add and attach extra disk to each node, this is done by a callback (apparently)
 #DOCS: see https://gist.github.com/leifg/4713995  && http://askubuntu.com/questions/317338/how-can-i-increase-disk-size-on-a-vagrant-vm && http://everythingshouldbevirtual.com/vagrant-adding-a-second-hard-drive && http://crysol.github.io/recipe/2015-11-17/vagrant-vdi-virtual-disk-for-virtualbox/#.V1V-hqJ96V4
 class VagrantPlugins::ProviderVirtualBox::Action::SetName
   alias_method :original_call, :call
@@ -17,6 +18,7 @@ class VagrantPlugins::ProviderVirtualBox::Action::SetName
     disk_file = "#{$shared_disk}.vdi"
     ui = env[:ui]
     driver = env[:machine].provider.driver
+    #see this link to understand more about uuid: http://superuser.com/a/837005 :
     uuid = driver.instance_eval { @uuid }
     if !File.exist?(disk_file)
       ui.info "Creating storage file '#{disk_file}'..."
