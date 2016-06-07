@@ -1,3 +1,6 @@
+# DOCS: Lsb system startup script https://wiki.debian.org/LSBInitScripts
+
+
 #!/bin/sh
 #
 #     SUSE system startup script for hawk
@@ -50,7 +53,7 @@ STATE_FILE=@WWW_BASE@/hawk/tmp/pids/puma.state
 PID_FILE=@WWW_BASE@/hawk/tmp/pids/puma.pid
 PUMA=$(which puma)
 PUMACTL=$(which pumactl)
-
+#DOCS: Check if the puma server is running and print the URL when starting up
 print_hawk_url() {
 	if [ ! -e $STATE_FILE ]; then
 		echo -e "\t${warn}hawk is not running${norm}"
@@ -185,4 +188,3 @@ case "$1" in
 	;;
 esac
 rc_exit
-

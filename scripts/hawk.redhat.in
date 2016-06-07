@@ -1,3 +1,5 @@
+# DOCS: Lsb system startup script https://wiki.debian.org/LSBInitScripts
+
 #!/bin/sh
 #
 #     RedHat system startup script for hawk

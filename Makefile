@@ -43,11 +43,13 @@ WITHIN_VAGRANT = 0
 LIBDIR = /usr/lib
 BINDIR = /usr/bin
 SBINDIR = /usr/sbin
-
+#DOCS: http://stackoverflow.com/questions/2145590/what-is-the-purpose-of-phony-in-a-makefile
 .PHONY: all clean tools
-# DOCS: 1'st step, if the env variable BUNDLE_GEMS is set to True, then bundle the gems inside the rpm by installing them locally (bundle package and bundle install --local --deployment tell bundler to install the gems from the cache instead of fetching them from rubygems.org)
-# because the files scripts/hawk.$(INIT_STYLE) scripts/hawk.service scripts/hawk.service.bundle_gems tools, it will be passed to the placeholder target and dependecy %:: %.in
+# DOCS: 1'st step, if the environment variable BUNDLE_GEMS is set to True, then bundle the gems inside the rpm by installing them locally (bundle package and bundle install --local --deployment tell bundler to install the gems from the cache instead of fetching them from rubygems.org)
+# because the files scripts/hawk.$(INIT_STYLE) scripts/hawk.service scripts/hawk.service.bundle_gems tools, it will be passed to the placeholder target and dependency %:: %.in
+# DOCS: see: http://forums.codeguru.com/showthread.php?384890-strange-target-name-containing-in-Makefile
 all: scripts/hawk.$(INIT_STYLE) scripts/hawk.service scripts/hawk.service.bundle_gems tools
+	# DOCS: about the parenthesis http://stackoverflow.com/a/29085684
 	(cd hawk; \
 	 if $(BUNDLE_GEMS) ; then \
 		# Ignore gems from test \
@@ -59,10 +61,14 @@ all: scripts/hawk.$(INIT_STYLE) scripts/hawk.service scripts/hawk.service.bundle
 		# Finally package and install the gems \
 		bundle package && bundle install --local --deployment ; \
 	 fi ; \
+	 #DOCS: run rake gettext:pack to write binary GetText .mo files, see https://github.com/grosser/gettext_i18n_rails
 	 TEXTDOMAIN=hawk bin/rake gettext:pack; \
+	 #DOCS: precompile the assets
 	 RAILS_ENV=production bin/rake assets:precompile)
 
+# DOCS: see: http://forums.codeguru.com/showthread.php?384890-strange-target-name-containing-in-Makefile
 %:: %.in
+	#DOCS: What this is basically goind to do is to the change the placeholder variables in the scripts/*.in files with the variables like $(WWW_BASE) defined in the beginning of this script
 	sed \
 		-e 's|@WWW_BASE@|$(WWW_BASE)|' \
 		-e 's|@LIBDIR@|$(LIBDIR)|' \
@@ -70,6 +76,7 @@ all: scripts/hawk.$(INIT_STYLE) scripts/hawk.service scripts/hawk.service.bundle
 		-e 's|@SBINDIR@|$(SBINDIR)|' \
 		-e 's|@WITHIN_VAGRANT@|$(WITHIN_VAGRANT)|' \
 		-e 's|@GEM_PATH@|$(WWW_BASE)/hawk/vendor/bundle/ruby/$(RUBY_ABI)|' \
+		#DOCS: This mean put the content of the %.in files in the new generated target % (e.g. hawk.service)
 		$< > $@
 
 tools/hawk_chkpwd: tools/hawk_chkpwd.c tools/common.h
