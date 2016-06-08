@@ -125,6 +125,7 @@ else
 		install -D -m 0644 scripts/hawk.service $(DESTDIR)/usr/lib/systemd/system/hawk.service
 endif
 
+# DOCS: Install is a combination of cp, chown, chmod and strip, it's a high level tool to that accomplishes a common sequence of elementary tasks.
 tools/install:
 	install -D -m 4750 tools/hawk_chkpwd $(DESTDIR)/usr/sbin/hawk_chkpwd
 	-chown root.haclient $(DESTDIR)/usr/sbin/hawk_chkpwd || true
@@ -161,6 +162,7 @@ archive:
 # The touch here is necessary to ensure the POT file is always updated
 # completely, even if it somehow winds up with a newer mtime than other
 # source files
+#ToClean
 pot:
 	@echo "** WARNING: THIS SCREWS UP Project-Id-Version IN THE .POT FILE"
 	@echo "**          DO NOT COMMIT WITHOUT FIXING THIS!"
@@ -171,5 +173,6 @@ srpm: archive
 	rm -f $(RPM_ROOT)/*.src.rpm
 	cd rpm && rpmbuild -bs $(RPM_OPTS) hawk.spec
 
+# DOCS: Make rpm, If you have a SUSE- or Fedora-based system, you can build an RPM easily from the source tree. Just clone this git repo, and run "make rpm", which in turn will trigger srpm and archive
 rpm: srpm
 	rpmbuild --rebuild $(RPM_ROOT)/*.src.rpm
