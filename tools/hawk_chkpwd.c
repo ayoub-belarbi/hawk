@@ -1,3 +1,8 @@
+/* DOCS: see https://www.kernel.org/pub/linux/libs/pam/whatispam.html */
+/* DOCS: https://www.digitalocean.com/community/tutorials/how-to-use-pam-to-configure-authentication-on-an-ubuntu-12-04-vps */
+/* DOCS: see https://www.kernel.org/pub/linux/libs/pam/whatispam.html */
+// This program is used to check the identity of the user of Hawk
+
 /*
  * hawk_chkpwd is almost identical to unix2_chkpwd, except:
  *  - argc must be 3 (i.e. must always specify PAM service

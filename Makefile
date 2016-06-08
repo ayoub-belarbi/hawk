@@ -78,7 +78,7 @@ all: scripts/hawk.$(INIT_STYLE) scripts/hawk.service scripts/hawk.service.bundle
 		-e 's|@GEM_PATH@|$(WWW_BASE)/hawk/vendor/bundle/ruby/$(RUBY_ABI)|' \
 		#DOCS: This mean put the content of the %.in files in the new generated target % (e.g. hawk.service)
 		$< > $@
-
+# DOCS: Compiling of chkpwd for Pam authentication, hawk_monitor for updating the state of  the cluster and hawk_invoke for the ACLs
 tools/hawk_chkpwd: tools/hawk_chkpwd.c tools/common.h
 	gcc -fpie -pie $(CFLAGS) -o $@ $< -lpam
 
@@ -94,10 +94,11 @@ tools/hawk_monitor: tools/hawk_monitor.c
 
 # TODO(must): This is inching towards becoming annoying: want better build infrastructure/deps
 tools/hawk_invoke: tools/hawk_invoke.c tools/common.h
-	gcc -fpie -pie $(CFLAGS) -o $@ $< #ToUnderstand: perhaps $(CFLAGS) is simply empty ??
+	gcc -fpie -pie $(CFLAGS) -o $@ $<
 
 tools: tools/hawk_chkpwd tools/hawk_monitor tools/hawk_invoke
 
+# Creating directories in /srv/www
 base/install:
 	mkdir -p $(DESTDIR)$(WWW_BASE)/hawk/log
 	mkdir -p $(DESTDIR)$(WWW_BASE)/hawk/tmp
