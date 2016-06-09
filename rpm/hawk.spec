@@ -14,9 +14,10 @@
 
 # Please submit bugfixes or comments via http://bugs.opensuse.org/
 #
-
-
-%if 0%{?suse_version}
+# --------- Definition section ----------
+# For all macros for opensuse, look at /usr/lib/rpm/macro (global RPM configuration file)
+%if 0%{?suse_version} # DOCS: If the value after expansion is different from 0 then is true, otherwise if {?suse_version} is not define, 0%{?suse_version} after expansion will be 0, see http://unix.stackexchange.com/questions/145999/rpm-macros-on-centos-6-5 && http://lists.rpm.org/pipermail/rpm-list/2009-January/000140.html && https://en.opensuse.org/openSUSE:Build_Service_cross_distribution_howto
+# DOCS: Defining some macros, see http://www.rpm.org/wiki/PackagerDocs/Macros
 %define	www_base	/srv/www
 %define	vendor_ruby	vendor_ruby
 %define	init_style	suse
@@ -30,7 +31,8 @@
 
 %define	gname		haclient
 %define	uname		hacluster
-
+# -------- END Definition section ------
+# Rpm tags: http://www.rpm.org/max-rpm/s1-rpm-inside-tags.html
 Name:           hawk
 Summary:        HA Web Konsole
 License:        GPL-2.0
@@ -38,28 +40,28 @@ Group:          %{pkg_group}
 Version:        2.0.0
 Release:        0
 Url:            http://www.clusterlabs.org/wiki/Hawk
-Source:         %{name}-%{version}.tar.bz2
-Source100:      hawk-rpmlintrc
-BuildRoot:      %{_tmppath}/%{name}-%{version}-build
-Provides:       ha-cluster-webui
-Requires:       crmsh
-Requires:       graphviz
+Source:         %{name}-%{version}.tar.bz2 # DOCS: This line points at the HOME location of the pristine source file. It is used if you ever want to get the source again or check for newer versions. Caveat: The filename in this line MUST match the filename you have on your own system (ie. don't download the source file and change its name). These files would go in the SOURCES directory. These files would go in the SOURCES directory.
+Source100:      hawk-rpmlintrc # DOCS: Used to deal with rpmlint warnings and errors, see https://old-en.opensuse.org/Packaging/RpmLint#RPM_Lint to understand rpmlint
+BuildRoot:      %{_tmppath}/%{name}-%{version}-build # DOCS: %_tmppath is	/var/tmp,  This line allows you to specify a directory as the "root" for building and installing the new package.
+Provides:       ha-cluster-webui # DOCS: The provides tag is used to specify a virtual package that the packaged software makes available when it is installed. Normally, this tag would be used when different packages provide equivalent services. For example, any package that allows a user to read mail might provide the mail-reader virtual package. Another package that depends on a mail reader of some sort, could require the mail-reader virtual package. It would then install without dependency problems, if any one of several mail programs were installed.
+Requires:       crmsh # DOCS: The requires tag is used to alert RPM to the fact that the package needs to have certain capabilities available in order to operate properly. These capabilities refer to the name of another package, or to a virtual package provided by one or more packages that use the provides tag. When the requires tag references a package name, version comparisons may also be included by following the package name with <, >, =, >=, or <=, and a version specification. To get even more specific, a package's release may be included as well.
+Requires:       graphviz # ToUnderstand: used for rendering the transition schema
 Requires:       graphviz-gd
 # Need a font of some kind for graphviz to work correctly (bsc#931950)
-Requires:       dejavu
+Requires:       dejavu # DOCS: The DejaVu fonts are a font family based on the Bitstream Vera Fonts.
 Requires:       pacemaker >= 1.1.8
 %if 0%{?fedora_version} >= 19
-Requires:       rubypick
-BuildRequires:  rubypick
+Requires:       rubypick # DOCS: Fedora /usr/bin/ruby stub to allow choosing Ruby runtime. Similarly to rbenv or RVM, it allows non-privileged user to choose which is preferred Ruby runtime for current task.
+BuildRequires:  rubypick # DOCS: Requires is for the built rpm, BuildRequires is what is required to build, EX: BuildRequires: gcc >= 3 BuildRequires: make Requires: MySQL = 3.23
 %endif
-Requires:       rubygem(%{rb_default_ruby_abi}:bundler)
+Requires:       rubygem(%{rb_default_ruby_abi}:bundler) # DOCS: please see https://en.opensuse.org/openSUSE:Packaging_Ruby#How_gem_dependencies_are_automatically_handled to understand how rpm resolve ruby version
 %if 0%{?suse_version}
-Recommends:     graphviz-gnome
+Recommends:     graphviz-gnome # ToUnderstand, what's the meaning of recommends
 Requires:       iproute2
-PreReq:         permissions
+PreReq:         permissions # TODO: (see http://www.rpm.org/max-rpm-snapshot/s1-rpm-depend-manual-dependencies.html) The PreReq tag is the same as Requires, originally with one additional property. Using it used to tell RPM that the package marked as PreReq should be installed before the package containing the dependency. However, as of RPM version 4.4, this special property is being phased out, and PreReq and Requires will soon have no functional differences. A plain Requires is enough to ensure proper installation order if there are no dependency loops present in the transaction. If dependency loops are present and cannot be avoided, packagers should strive to construct them in a way that the order of installation of the the this way interdependent packages does not matter. Historically, in dependency loops PreReq used to "win" over the conventional Requires when RPM determined the installation order in a transaction. But as said above, this functionality is being phased out, and one should no longer assume things will work that way.
 BuildRequires:  fdupes
 BuildRequires:  libpacemaker-devel
-%{?systemd_requires}
+%{?systemd_requires} # DOCS: https://fedoraproject.org/wiki/Packaging:Scriptlets#Scriptlets
 %if 0%{?suse_version} >= 1210
 BuildRequires:  systemd
 %endif
@@ -67,7 +69,7 @@ BuildRequires:  systemd
 Requires:       iproute
 BuildRequires:  pacemaker-libs-devel
 %endif
-
+# For build, rpm uses BuildRequires tag, for install, it uses requires, see http://unix.stackexchange.com/questions/40372/how-to-link-requires-to-buildrequires-in-rpm-spec
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:builder) >= 3.2
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:byebug) >= 3.5
 BuildRequires:  rubygem(%{rb_default_ruby_abi}:fast_gettext) >= 0.9.2
@@ -139,16 +141,19 @@ BuildRequires:  pam-devel
 A web-based GUI for managing and monitoring the Pacemaker
 High-Availability cluster resource manager.
 
-
+# DOCS: This is the second section in the spec file. It is used to get the sources ready to build.
 %prep
+# DOCS: It simply unpacks the sources and cd's into the source directory
 %setup
-
+# DOCS: There aren't really any macros for this section. You should just put any commands here that you would need to use to build the software once you had untarred the source, patched it, and cd'ed into the directory. This is just another set of commands passed to sh, so any legal sh commands can go here (including comments).
 %build
 export NOKOGIRI_USE_SYSTEM_LIBRARIES=1
 CFLAGS="${CFLAGS} ${RPM_OPT_FLAGS}"
 export CFLAGS
 make WWW_BASE=%{www_base} INIT_STYLE=%{init_style} LIBDIR=%{_libdir} BINDIR=%{_bindir} SBINDIR=%{_sbindir} BUNDLE_GEMS=%{expand:%{?bundle_gems:true}%{!?bundle_gems:false}} RUBY_ABI=%{rb_ver}
 
+
+# There aren't really any macros here, either. You basically just want to put whatever commands here that are necessary to install. If you have make install available to you in the package you are building, put that here.
 %install
 make WWW_BASE=%{www_base} INIT_STYLE=%{init_style} DESTDIR=%{buildroot} BUNDLE_GEMS=%{expand:%{?bundle_gems:true}%{!?bundle_gems:false}} install
 # copy of GPL
