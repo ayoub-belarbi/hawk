@@ -16,89 +16,121 @@
   <% # passing null as name and host means to fetch local cluster information %>
   <% unless current_cib.offline? %>
     <script>
-      dashboardAddCluster({"name":null, "host":null, "port":null, https:null, "interval":10});
+      dashboardAddCluster({"name":null, "host":null, "port":null, https:null, "interval":10}); // Possible values for status_format: "table", "canvas" and "canvas&table"
+
     </script>
   <% end %>
   <script>
     <%=raw javascript_for_clusters @clusters %>
   </script>
 
-  <div id="cib-status-matrix-details"></div>
 
   <div id="status-table"></div>
 
   <script id="status-table-template" type="text/x-jsrender">
-    <table class="table table-bordered">
+
+    <table id="table-template" class="table table-bordered">
       <tbody>
-        {{!-- NODES (OK)--}}
+        {{!-- NODES ROW--}}
         <tr id="nodes-table-row">
+          <th colspan="2" class="col-sm-2 cluster-name">
+            <span id="table-cluster-name">{{:~root.crm_config.cluster_name}}</span>
+          </th>
+          {{for ~root.nodes itemVar="~node"}}
+            <th>
+              {{if ~node.state === "unclean"}}
+                {{:~saveAttrs("node" ,"#node-" + name)}}
+                <span class="label status-bar label-danger"></span>
+              {{else ~node.state === "online"}}
+                {{:~saveAttrs("node" ,"#node-" + name)}} 
+                <span class="label status-bar label-success"></span>
+              {{else ~node.state === "offline"}}
+                {{:~saveAttrs("node" ,"#node-" + name)}}
+                <span class="label status-bar label-default"></span>
+              {{else ~node.state === "standby"}}
+                {{:~saveAttrs("node" ,"#node-" + name)}}
+                <span class="label status-bar label-default"></span>
+              {{else ~node.state === "pending"}}
+                {{:~saveAttrs("node" ,"#node-" + name)}}
+                <span class="label status-bar label-success"></span>
+                <span class="label status-bar label-warning"></span>
+              {{/if}}
 
-            <th class="col-sm-1"></th>
-            {{for ~root.nodes}}
-                <th id="node-{{:name}}">{{:name}}<span>{{:~root.cluster_name}}</span>
-                    {{if state === "unclean"}}
-                        <div><small><i><em>This node is in an unclean state <br>should be a problem (background, label, sign)<br> it applies to all cells underneath</em></i></small></div>
-                    {{else state === "online"}}
-                        <div><small><i><em>This node is online! should be ok (background, label, sign) </em></i></small></div>
-                        {{:~saveState("node" ,"#node-" + name, "status-success")}}
-                    {{else state === "offline"}}
-                        <div><small><i><em>This node is offline!Should be ok but we should show that (background, label, sign)</em></i></small></div>
+              <span id="node-{{:name}}" class="node-title" title="Node id: {{:~node.id}}">{{:name}}</span>
 
-                    {{/if}}
-                    {{if ~node.remote == true}}
-                        <div><small><i><em>"This node is Remote"</em></i></small></div>
-                    {{/if}}
-                    {{if ~node.maintenance == true}}
-                        <div><small><i><em>"This node is in maintenance mode"</em></i></small></div>
-                    {{/if}}
-                </th>
-            {{/for}}
+              {{if ~node.name === ~root.meta.dc}}
+                <i class="fa fa-home" aria-hidden="true" title="Designated coordinator"></i>
+              {{/if}}
+              {{if ~node.remote == true}}
+                <i class="fa fa-cloud" aria-hidden="true" title="Remote node"></i>
+              {{/if}}
+              {{if ~node.maintenance == true}}
+                <span class="label maintenance-label label-info"><i class="fa fa-maxcdn" aria-hidden="true"></i></span>
+              {{/if}}
+              {{if ~node.fence_history !== ""}}
+                <i class="fa fa-refresh text-warning" title='{{:~node.fence_history}}'></i>
+              {{/if}}
+            </th>
+          {{/for}}
         </tr>
-        {{!-- END NODES (OK) --}}
-
-
-        {{!-- RESOURCES --}}
+        {{!-- END NODES --}}
+        {{!-- RESOURCES ROWS--}}
         <div id="resources-table-rows">
-          {{for ~root.resources}}
-              <tr>
-                <td class="text-left">{{:name}} {{!-- RESOURCE NAME CELL --}}
-                {{!-- WE COULD SHOW HERE SOME INFO ALSO --}}
-                  {{if _stopped == true}}<div><small>"Error: this resource is stopped" (background, sign or label)/ entire row?</small></div>{{/if}} {{!-- IF RESOURCE IS STOPPED (OK)--}}
-                  {{if instances.length != 0}}<div><small>"This resource is working fine on at least one node (background, sign or label)/ entire row?"</small></div>{{/if}} {{!-- IF RESOURCE IS RUNNING ON ATLEAST ONE NODE (OK)--}}
+          {{for ~root.resources itemVar="~resource"}}
+            <tr>
+              <td class="border-style">
+                {{if ~resource.maintenance == true}}
+                  <span class="label maintenance-label label-info"><i class="fa fa-maxcdn" aria-hidden="true"></i></span>
+                {{/if}}
+                {{if ~resource["type"] === "master"}}
+                  <i class="fa fa-asterisk" aria-hidden="true"></i>
+                {{/if}}
+              </td>
+              <td class="text-left">
+                {{if ~resource.state === "stopped" && ~resource["attributes"]["target-role"] === "Stopped"}}
+                  {{:~saveAttrs("resource" ,"#resource-" + id )}}
+                  <span class="label status-bar label-default"></span>
+                {{else ~resource.state === "stopped"}}
+                  {{:~saveAttrs("resource" ,"#resource-" + id )}}
+                  <span class="label status-bar label-danger"></span>
+                {{/if}}
+                {{if ~resource.state !== "stopped"}}
+                  {{:~saveAttrs("resource" ,"#resource-" + id )}}
+                  <span class="label status-bar label-success"></span>
+                {{/if}}
+                
+                <span id="resource-{{:id}}">{{:id}}</span>
+                
+              </td>
+
+              {{for ~root.nodes itemVar="~node"}}
+                <td>
+                {{if ~node.state === "unclean" }}
+                  <i class="fa fa-circle fa-lg text-danger"></i>
+                {{else ~resource.state === "stopped"}}
+                  <i class="fa fa-circle fa-lg text-danger"></i>
+                {{else ~node.state === "offline" }}
+                  <i class="fa fa-circle fa-lg text-offline"></i>
+                {{else}}
+                  {{props ~resource.running_on itemVar="~nodeWhereTheResourceRun"}}
+                    {{if (~nodeWhereTheResourceRun.key === ~node.name) && (~nodeWhereTheResourceRun.prop === "started")}}
+                      <i class="fa fa-circle fa-lg text-success" title="Started"></i>
+                    {{else (~nodeWhereTheResourceRun.key === ~node.name) && (~nodeWhereTheResourceRun.prop === "slave")}}
+                        <i class="fa fa-circle fa-lg text-success" title="Started"></i>
+                        <h5><span class="label label-warning">Slave</span></h5>
+                    {{else (~nodeWhereTheResourceRun.key === ~node.name) && (~nodeWhereTheResourceRun.prop === "master")}}
+                        <i class="fa fa-circle fa-lg text-success" title="Started"></i>
+                        <h5><span class="label label-info">Master</span></h5>
+                    {{else (~nodeWhereTheResourceRun.key === ~node.name) && (~nodeWhereTheResourceRun.prop === "not_running")}}
+                        <i class="fa fa-circle fa-lg text-offline"></i>
+                    {{/if}}
+                  {{/props}}
+                {{/if}}
                 </td>
-
-
-                {{for ~root.nodes}}
-                    <td>
-
-                    {{if state === "unclean" }} {{!-- IF THE NODE IS UNCLEAN, EVRY CELL SHOULD BE MARKED (OK)--}}
-                        <i class="fa fa-circle fa-lg text-danger" title="Started"></i>
-                        <div><small><i><em>"Error1: The node is in an unclean state"</em></i></small></div>
-                    {{/if}}
-
-
-                    {{if #parent.parent.data.instances.length == 0}} {{!-- IF THE RESOURCE IS NOTE RUNNING ON ANY NODE (OK)--}}
-                          <div><small><i><em>'Error 2: This resource is not runnin on any node <br>(red circle in every cell in this row) <br>However, this should not be a problem (maybe if we leave it blank or choose another color is better)'</em></i></small></div>
-
-                    {{else}} {{!-- IF THE RESOURCE IS RUNNING ON ATLEAST ONE NODE--}}
-                          {{for #parent.parent.parent.data.instances }} {{!-- LOOP THROW THE INSTANCES AND COMPARE THE INSTANCE :NODE WHERE THE RESOURCE IS RUNNING: AND THE NODE ITSELF --}}
-
-                            {{if #parent.parent.parent.data.state === "offline" }}
-                              "TODO: the node is offline, gray background"
-                            {{else #parent.parent.parent.data.state === "unclean" }}
-                                "TEST"
-                            {{else (node === #parent.parent.parent.data.name) && (state === "started")}}
-                              <i class="fa fa-circle fa-lg text-success" title="Started"></i>
-
-                            {{/if}}
-                          {{/for}}
-                    {{/if}}
-                    </td>
-                {{/for}}
-              </tr>
+              {{/for}}
+            </tr>
           {{/for}}
         </div>
-
         {{!-- END RESOURCES --}}
         {{!-- TICKETS ROWS --}}
         {{if ~root.tickets}}
